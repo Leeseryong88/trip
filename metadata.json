@@ -1,6 +1,7 @@
 {
-  "name": "플래닛 (Plan-it)",
-  "description": "AI와 함께 여행 일정을 자동으로 생성하거나, 수동으로 계획을 관리하고 멋진 HTML 파일로 다운로드 할 수 있는 AI 여행 플래너입니다.",
-  "requestFramePermissions": [],
-  "prompt": ""
+  "name": "여행가J",
+  "description": "AI 기반의 개인 맞춤형 여행 플래너. 당신의 다음 모험을 계획하고, 맞춤 일정을 생성하며, 숨겨진 보석같은 장소들을 발견하세요. 여행가J와 함께라면 여행 준비가 쉬워집니다.",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "keywords": ["ai", "travel", "planner", "trip", "scheduler", "itinerary"]
 }
