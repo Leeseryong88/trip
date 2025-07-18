@@ -187,12 +187,13 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
         }
       >
         {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-              <p className="mt-4 text-slate-600 font-semibold">멋진 여행 일정을 생성 중입니다...</p>
-              <p className="mt-2 text-sm text-slate-500">이 작업은 최대 1~2분 소요될 수 있습니다.<br/>새로운 창을 열어도 생성이 중단되지 않습니다.</p>
-            </div>
+          <div className="flex flex-col items-center justify-center h-full">
+            <SparklesIcon className="h-12 w-12 animate-spin text-slate-500" />
+            <p className="mt-4 text-slate-600 font-semibold">
+              일정을 생성중입니다.
+              <br />
+              이 작업은 최대 2분 이상 소요될 수 있습니다.
+            </p>
           </div>
         ) : generatedHtml ? (
           <iframe

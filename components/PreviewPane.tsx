@@ -1,8 +1,9 @@
 
 import React from 'react';
+import { SparklesIcon } from './Icons';
 
 interface PreviewPaneProps {
-  htmlContent: string;
+  htmlContent: string | null;
   isLoading: boolean;
 }
 
@@ -12,11 +13,13 @@ const PreviewPane: React.FC<PreviewPaneProps> = ({ htmlContent, isLoading }) => 
       <h2 className="text-2xl font-bold text-slate-800 mb-4">미리보기</h2>
       <div className="flex-grow bg-slate-200 rounded-lg overflow-hidden border border-slate-300">
         {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-              <p className="mt-4 text-slate-600">멋진 여행 일정을 생성 중입니다...</p>
-            </div>
+          <div className="flex flex-col items-center justify-center h-full">
+            <SparklesIcon className="h-12 w-12 animate-spin text-slate-500" />
+            <p className="mt-4 text-slate-600">
+              일정을 생성중입니다.
+              <br />
+              이 작업은 최대 2분 이상 소요될 수 있습니다.
+            </p>
           </div>
         ) : htmlContent ? (
           <iframe
