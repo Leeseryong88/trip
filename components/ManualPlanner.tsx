@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { ScheduleItem, UIChecklistItem, NearbyPlace } from '../types';
 import ScheduleForm from './ScheduleForm';
 import { generateItineraryHtml, generateScheduleFromText, generateChecklistFromSchedule } from '../services/geminiService';
 import { SparklesIcon, DownloadIcon } from './Icons';
 import NearbyFinderModal from './NearbyFinderModal';
 import Modal from './Modal';
+import { travelQuotes } from '../services/travelQuotes';
 
 declare var saveAs: (blob: Blob, filename: string) => void;
 
@@ -21,6 +22,22 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
   const [isParsing, setIsParsing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [narrativeError, setNarrativeError] = useState<string | null>(null);
+  const [currentQuote, setCurrentQuote] = useState<string>('');
+
+  useEffect(() => {
+    if (isLoading) {
+      // Set an initial quote
+      setCurrentQuote(travelQuotes[Math.floor(Math.random() * travelQuotes.length)]);
+      
+      const intervalId = setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * travelQuotes.length);
+        setCurrentQuote(travelQuotes[randomIndex]);
+      }, 10000); // Change quote every 10 seconds
+
+      return () => clearInterval(intervalId);
+    }
+  }, [isLoading]);
+
 
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
@@ -187,13 +204,14 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
         }
       >
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <SparklesIcon className="h-12 w-12 animate-spin text-slate-500" />
-            <p className="mt-4 text-slate-600 font-semibold">
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-6"></div>
+            <p className="text-slate-600 font-semibold text-lg">
               일정을 생성중입니다.
               <br />
-              이 작업은 최대 2분 이상 소요될 수 있습니다.
+              <span className="text-sm">이 작업은 최대 2분 이상 소요될 수 있습니다.</span>
             </p>
+            <p className="mt-8 text-slate-500 italic px-4">"{currentQuote}"</p>
           </div>
         ) : generatedHtml ? (
           <iframe
