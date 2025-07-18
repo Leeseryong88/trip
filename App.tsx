@@ -66,28 +66,21 @@ function App() {
     <div className="min-h-screen bg-slate-100 font-sans">
       <header className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
+          <h1 
+            className="text-3xl font-bold text-slate-800 tracking-tight cursor-pointer"
+            onClick={startNewPlan}
+            title="새 계획 시작"
+          >
             여행가J
           </h1>
-          <nav>
-            <ul className="flex space-x-6">
-              <li>
-                <a href="#" className="text-gray-600 hover:text-gray-900">
-                  Home
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-600 hover:text-gray-900">
-                  About
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-600 hover:text-gray-900">
-                  Contact
-                </a>
-              </li>
-            </ul>
-          </nav>
+          {mode !== 'selection' && (
+            <button
+              onClick={startNewPlan}
+              className="px-4 py-2 text-sm font-semibold text-indigo-600 bg-indigo-100 rounded-lg hover:bg-indigo-200 transition-colors"
+            >
+              새로운 계획 시작
+            </button>
+          )}
         </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
