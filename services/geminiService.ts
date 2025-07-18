@@ -1,4 +1,7 @@
 
+
+
+
 import { GoogleGenAI, Type } from "@google/genai";
 import type { ScheduleItem, NearbyPlace } from "../types";
 
@@ -64,7 +67,7 @@ export const generateFullItineraryFromPrompt = async (
                   time: { type: Type.STRING, description: "활동 시간 (HH:MM)." },
                   activity: { type: Type.STRING, description: "활동에 대한 간결한 설명." },
                   cost: { type: Type.STRING, description: "예상 비용 (예: '₩20,000')." },
-                  location: { type: Type.STRING, description: "장소의 구체적인 이름 (예: '경복궁')." }
+                  location: { type: Type.STRING, description: "구글 지도에서 검색 가능한 장소의 구체적인 이름 또는 주소 (예: '서울 경복궁', 'N서울타워')." }
                 },
                 required: ["date", "time", "activity"]
               }
@@ -98,7 +101,7 @@ export const generateFullItineraryFromPrompt = async (
 
 
 // Main function to generate the final HTML page
-const generateHtmlPrompt = (schedule: ScheduleItem[], checklist: string[]): string => {
+const generateHtmlPrompt = (schedule: ScheduleItem[], checklist: string[], fullMapUrl: string): string => {
   const scheduleString = schedule.map(item => {
       let entry = `- 날짜: ${item.date}, 시간: ${item.time}, 활동: ${item.activity}`;
       if(item.cost) {
@@ -111,10 +114,27 @@ const generateHtmlPrompt = (schedule: ScheduleItem[], checklist: string[]): stri
   }).join("\n");
 
   const checklistString = checklist.map(item => `- ${item}`).join("\n");
+  
+  // Calculate total cost
+  const totalCost = schedule.reduce((total, item) => {
+    if (item.cost) {
+      // Extracts numbers from strings like '₩20,000', '$50', '30000원'
+      const costValue = parseInt(item.cost.replace(/[^\d]/g, ''), 10);
+      if (!isNaN(costValue)) {
+        return total + costValue;
+      }
+    }
+    return total;
+  }, 0);
+
+  // Format total cost, assuming KRW if numbers are present.
+  const totalCostString = totalCost > 0 
+    ? `${totalCost.toLocaleString('ko-KR')}원` 
+    : "표시할 경비 정보가 없습니다.";
 
   return `
     당신은 아름다운 단일 페이지 여행 일정을 만드는 전문 웹 디자이너입니다.
-    당신의 임무는 다음 사용자 제공 일정과 준비물 목록을 완전한, 상호작용적인, 독립형 HTML 파일로 변환하는 것입니다.
+    당신의 임무는 다음 사용자 제공 일정, 준비물 목록, 총 경비, 전체 경로 지도 URL 데이터를 완전한, 상호작용적인, 독립형 HTML 파일로 변환하는 것입니다.
 
     **HTML 출력 요구사항:**
     1.  **구조:** 완전한 HTML5 문서(<!DOCTYPE html>부터 </html>까지)를 생성하세요.
@@ -123,20 +143,29 @@ const generateHtmlPrompt = (schedule: ScheduleItem[], checklist: string[]): stri
         *   여행 일정에 어울리는 매력적인 한글 제목을 만드세요 (예: "우리의 잊지 못할 여정").
         *   배경은 'bg-slate-100'이나 'bg-gray-50'과 같이 밝고 우아한 색상이어야 합니다.
         *   주요 콘텐츠 컨테이너는 'max-w-4xl mx-auto p-8' 스타일을 적용하세요.
-    4.  **탭 인터페이스:** "여행 일정"과 "준비물 체크리스트" 두 개의 탭을 만들어야 합니다.
-        *   탭 버튼 그룹을 만드세요. 활성 탭 버튼은 'bg-indigo-600 text-white' 스타일을, 비활성 탭은 'bg-white text-slate-600' 스타일을 적용해야 합니다. 각 버튼에 id="scheduleButton"과 id="checklistButton"을 부여하세요.
-        *   두 개의 콘텐츠 패널(div)을 만드세요. 하나는 일정용, 다른 하나는 체크리스트용입니다. 패널 ID는 각각 'scheduleTab'과 'checklistTab'으로 지정하세요.
-        *   기본적으로 'scheduleTab'은 보이고 'checklistTab'은 숨겨져야 합니다 ('hidden' 클래스 사용).
+    4.  **탭 인터페이스:** "여행 일정", "준비물 체크리스트", 그리고 "전체 경로 지도" 세 개의 탭을 만들어야 합니다.
+        *   탭 버튼 그룹을 만드세요. 활성 탭 버튼은 'bg-indigo-600 text-white' 스타일을, 비활성 탭은 'bg-white text-slate-600' 스타일을 적용해야 합니다. 각 버튼에 id="scheduleButton", id="checklistButton", 그리고 id="mapButton"을 부여하세요.
+        *   세 개의 콘텐츠 패널(div)을 만드세요. 일정용, 체크리스트용, 그리고 지도용입니다. 패널 ID는 각각 'scheduleTab', 'checklistTab', 'mapTab'으로 지정하세요.
+        *   기본적으로 'scheduleTab'은 보이고 나머지 탭들은 숨겨져야 합니다 ('hidden' 클래스 사용).
     5.  **여행 일정 탭 (scheduleTab):**
+        *   일정 목록 위에, 제공된 **총 경비 데이터**를 사용하여 총 예상 경비를 표시하는 섹션을 만드세요. 이 섹션은 'bg-white p-4 rounded-lg shadow-md mb-6' 스타일을 적용하여 눈에 띄게 만들고, '총 예상 경비'라는 제목과 함께 경비 금액을 'text-xl font-bold text-indigo-700' 스타일로 보여주세요.
         *   일정 항목들을 날짜별로 그룹화하세요. 각 날짜는 'text-2xl font-bold text-gray-700 mb-4'과 같이 눈에 띄는 제목이어야 합니다.
         *   각 일정 카드는 그림자('shadow-md'), 둥근 모서리('rounded-lg'), 그리고 패딩('p-4')을 가진 'bg-white'여야 합니다.
         *   각 카드 안에는 시간, 활동, 비용(제공된 경우), 그리고 장소(제공된 경우)를 명확하게 표시하세요.
+        *   **장소가 제공된 경우, 장소 이름 옆에 Google 지도로 연결되는 링크를 추가해야 합니다.** 이 링크는 \`<a>\` 태그여야 하고, \`href\`는 \`https://www.google.com/maps/search/?api=1&query=URL_ENCODED_LOCATION_NAME\` 형식이어야 합니다. 링크는 새 탭에서 열리도록 \`target="_blank"\` 속성을 포함해야 합니다. 링크 안에는 '지도에서 보기'라는 텍스트와 함께 다음 SVG 아이콘을 표시하여 시각적으로 나타내세요: \`<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1.5 text-slate-400 hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>\`.
     6.  **준비물 체크리스트 탭 (checklistTab):**
         *   제공된 준비물 목록을 기반으로 체크리스트를 생성하세요.
         *   각 항목은 \`<div class="flex items-center p-2 rounded-md hover:bg-slate-200">\` 안에 \`<input type="checkbox">\`와 \`<label>\`을 포함해야 합니다.
         *   체크박스에 \`onchange="toggleChecked(this)"\` 이벤트를 추가하세요.
         *   체크된 항목의 \`label\` 텍스트는 취소선('line-through')과 회색('text-slate-500')으로 스타일이 변경되어야 합니다.
-    7.  **상호작용성 (JavaScript):**
+    7.  **전체 경로 지도 탭 (mapTab):**
+        *   이 탭 패널은 'bg-white p-8 rounded-lg shadow-md text-center' 스타일을 적용하세요.
+        *   ${fullMapUrl ?
+            `'<h3 class="text-xl font-bold text-slate-800 mb-6">전체 여행 경로를 확인해보세요!</h3>' 라는 제목을 추가하세요. 그 아래에 사용자가 전체 여행 경로를 볼 수 있는 버튼을 만드세요. 이 버튼은 \`<a>\` 태그여야 하고, \`href\`는 "${fullMapUrl}"이어야 하며, 새 탭에서 열리도록 \`target="_blank"\` 속성을 포함해야 합니다. 버튼 스타일은 'inline-flex items-center gap-3 px-8 py-4 bg-green-600 text-white font-bold text-lg rounded-xl hover:bg-green-700 transition-transform transform hover:scale-105 shadow-lg'로 하세요. 버튼 안에는 "Google 지도에서 전체 경로 보기" 텍스트와 함께 지도 아이콘 SVG를 포함하세요: \`<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m-6 10V7m0 0l6-3m0 0l6 3m-6-3v10" /></svg>\`.`
+            :
+            `'경로를 표시할 장소가 충분하지 않습니다. 일정에 장소를 추가해 주세요.' 라는 메시지를 'text-slate-500 text-center py-10' 스타일로 표시하세요.`
+        }
+    8.  **상호작용성 (JavaScript):**
         *   </body> 태그 바로 앞에 <script> 태그를 추가하고 다음 JavaScript 코드를 정확히 포함하세요. 이 코드는 탭 전환과 체크리스트 항목 상태 변경을 처리합니다.
         
         <script>
@@ -144,10 +173,12 @@ const generateHtmlPrompt = (schedule: ScheduleItem[], checklist: string[]): stri
                 const tabButtons = {
                     schedule: document.getElementById('scheduleButton'),
                     checklist: document.getElementById('checklistButton'),
+                    map: document.getElementById('mapButton'),
                 };
                 const tabPanels = {
                     schedule: document.getElementById('scheduleTab'),
                     checklist: document.getElementById('checklistTab'),
+                    map: document.getElementById('mapTab'),
                 };
                 
                 Object.values(tabButtons).forEach(button => {
@@ -160,11 +191,9 @@ const generateHtmlPrompt = (schedule: ScheduleItem[], checklist: string[]): stri
                     if (panel) panel.classList.add('hidden');
                 });
 
-                if (tabButtons[tabName]) {
+                if (tabButtons[tabName] && tabPanels[tabName]) {
                     tabButtons[tabName].classList.add('bg-indigo-600', 'text-white');
                     tabButtons[tabName].classList.remove('bg-white', 'text-slate-600');
-                }
-                if (tabPanels[tabName]) {
                     tabPanels[tabName].classList.remove('hidden');
                 }
             }
@@ -183,8 +212,11 @@ const generateHtmlPrompt = (schedule: ScheduleItem[], checklist: string[]): stri
             document.addEventListener('DOMContentLoaded', () => {
                 const scheduleButton = document.getElementById('scheduleButton');
                 const checklistButton = document.getElementById('checklistButton');
+                const mapButton = document.getElementById('mapButton');
+
                 if(scheduleButton) scheduleButton.addEventListener('click', () => switchTab('schedule'));
                 if(checklistButton) checklistButton.addEventListener('click', () => switchTab('checklist'));
+                if(mapButton) mapButton.addEventListener('click', () => switchTab('map'));
                 
                 // Initialize default tab
                 switchTab('schedule');
@@ -196,6 +228,9 @@ const generateHtmlPrompt = (schedule: ScheduleItem[], checklist: string[]): stri
 
     **준비물 목록 데이터:**
     ${checklistString}
+    
+    **총 경비 데이터:**
+    ${totalCostString}
 
     결과물로 순수 HTML 코드만 제공해주세요. 코드 주변에 설명이나 마크다운 서식을 포함하지 마세요.
   `;
@@ -206,7 +241,33 @@ export const generateItineraryHtml = async (schedule: ScheduleItem[], checklist:
     return Promise.resolve("");
   }
 
-  const prompt = generateHtmlPrompt(schedule, checklist);
+  // Sort schedule by date and time to ensure logical path
+  const sortedSchedule = [...schedule].sort((a, b) => {
+    const dateA = new Date(`${a.date}T${a.time || '00:00'}`).getTime();
+    const dateB = new Date(`${b.date}T${b.time || '00:00'}`).getTime();
+    return dateA - dateB;
+  });
+
+  // Extract unique locations in chronological order
+  const uniqueLocations = sortedSchedule
+    .map(item => item.location)
+    .filter((location, index, self): location is string => !!location && self.indexOf(location) === index);
+
+  let fullMapUrl = '';
+  if (uniqueLocations.length >= 2) {
+      const origin = encodeURIComponent(uniqueLocations[0]);
+      const destination = encodeURIComponent(uniqueLocations[uniqueLocations.length - 1]);
+      const waypoints = uniqueLocations.slice(1, -1).map(loc => encodeURIComponent(loc)).join('|');
+      fullMapUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+      if (waypoints) {
+          fullMapUrl += `&waypoints=${waypoints}`;
+      }
+  } else if (uniqueLocations.length === 1) {
+      fullMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(uniqueLocations[0])}`;
+  }
+
+
+  const prompt = generateHtmlPrompt(schedule, checklist, fullMapUrl);
   
   try {
     const response = await ai.models.generateContent({
@@ -342,7 +403,7 @@ export const findNearbyPlaces = async (
     const prompt = `
         당신은 현지 여행 가이드 전문가입니다.
         '${location}' 주변에 있는 인기있는 ${placeType} 5곳을 추천해주세요.
-        각 장소에 대해 이름과 1-2 문장의 간략한 설명을 제공해주세요.
+        각 장소에 대해 이름, 1-2 문장의 간략한 설명, 그리고 구글 지도에서 검색 가능한 정확한 주소를 제공해주세요.
         결과는 반드시 지정된 JSON 스키마를 따르는 배열이어야 합니다. 다른 텍스트나 설명 없이 JSON 배열만 반환해주세요.
     `;
 
@@ -364,9 +425,13 @@ export const findNearbyPlaces = async (
                             description: {
                                 type: Type.STRING,
                                 description: '추천 장소에 대한 1-2 문장의 간략한 설명'
+                            },
+                            address: {
+                                type: Type.STRING,
+                                description: '구글 지도에서 검색 가능한 주소'
                             }
                         },
-                        required: ["name", "description"]
+                        required: ["name", "description", "address"]
                     }
                 }
             }

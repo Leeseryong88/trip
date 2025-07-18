@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { ScheduleItem, UIChecklistItem } from '../types';
-import { TrashIcon, SparklesIcon, ClipboardListIcon, PencilIcon, CheckIcon, XMarkIcon, PlusIcon, MapPinIcon } from './Icons';
+import { TrashIcon, SparklesIcon, ClipboardListIcon, PencilIcon, CheckIcon, XMarkIcon, PlusIcon, MapPinIcon, ExternalLinkIcon } from './Icons';
 import Checklist from './Checklist';
 import Modal from './Modal';
 
@@ -13,6 +13,7 @@ interface ScheduleFormProps {
   isParsing: boolean;
   narrativeError: string | null;
   onOpenNearbyFinder: (item: ScheduleItem) => void;
+  showNarrativeInput: boolean;
 }
 
 const ScheduleForm: React.FC<ScheduleFormProps> = ({
@@ -24,6 +25,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
   isParsing,
   narrativeError,
   onOpenNearbyFinder,
+  showNarrativeInput,
 }) => {
   const [narrativeContent, setNarrativeContent] = useState('');
   const [activeTab, setActiveTab] = useState<'schedule' | 'checklist'>('schedule');
@@ -108,28 +110,30 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
     <div className="bg-white p-6 rounded-2xl shadow-lg h-full flex flex-col">
       <h2 className="text-2xl font-bold text-slate-800 mb-4">나의 여행 정보</h2>
       
-      <form onSubmit={handleSubmit} className="mb-4">
-        <div className="mb-4">
-          <label htmlFor="narrative-area" className="block text-sm font-medium text-slate-600 mb-1">여행 계획을 서술해주세요</label>
-          <textarea 
-            id="narrative-area"
-            rows={5}
-            value={narrativeContent}
-            onChange={e => setNarrativeContent(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="자유롭게 일정을 설명해주세요. AI가 일정과 준비물을 자동으로 정리해줍니다.&#10;예: 내일 오전 10시에 경복궁에 갈거야. 그리고 저녁 7시 비행기로 제주도로 출발해."
-          />
-        </div>
-        {narrativeError && <p className="text-sm text-red-600 mb-3">{narrativeError}</p>}
-        <button
-          type="submit"
-          disabled={isParsing}
-          className="w-full flex items-center justify-center bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-300 disabled:bg-indigo-400"
-        >
-          {isParsing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <SparklesIcon />}
-          <span className="ml-2">{isParsing ? '분석 중...' : '일정 및 준비물 추가'}</span>
-        </button>
-      </form>
+      {showNarrativeInput && (
+        <form onSubmit={handleSubmit} className="mb-4">
+          <div className="mb-4">
+            <label htmlFor="narrative-area" className="block text-sm font-medium text-slate-600 mb-1">여행 계획을 서술해주세요</label>
+            <textarea 
+              id="narrative-area"
+              rows={5}
+              value={narrativeContent}
+              onChange={e => setNarrativeContent(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="자유롭게 일정을 설명해주세요. AI가 일정과 준비물을 자동으로 정리해줍니다.&#10;예: 내일 오전 10시에 경복궁에 갈거야. 그리고 저녁 7시 비행기로 제주도로 출발해."
+            />
+          </div>
+          {narrativeError && <p className="text-sm text-red-600 mb-3">{narrativeError}</p>}
+          <button
+            type="submit"
+            disabled={isParsing}
+            className="w-full flex items-center justify-center bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-300 disabled:bg-indigo-400"
+          >
+            {isParsing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <SparklesIcon />}
+            <span className="ml-2">{isParsing ? '분석 중...' : '일정 및 준비물 추가'}</span>
+          </button>
+        </form>
+      )}
 
       <div className="border-b border-slate-200">
         <nav className="flex space-x-2" aria-label="Tabs">
@@ -168,12 +172,25 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
                 ) : (
                 <li key={item.id} className="flex items-center justify-between bg-slate-100 p-3 rounded-lg shadow-sm list-none">
                     <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
-                        <p className="font-semibold text-slate-800 truncate pr-2">{item.activity}</p>
-                        {item.cost && <p className="text-sm font-medium text-green-600 whitespace-nowrap">{item.cost}</p>}
-                    </div>
-                    <p className="text-sm text-slate-500">{item.date} {item.time}</p>
-                    {item.location && <p className="text-sm text-slate-600 truncate mt-1">장소: {item.location}</p>}
+                        <div className="flex justify-between items-start">
+                            <p className="font-semibold text-slate-800 truncate pr-2">{item.activity}</p>
+                            {item.cost && <p className="text-sm font-medium text-green-600 whitespace-nowrap">{item.cost}</p>}
+                        </div>
+                        <p className="text-sm text-slate-500">{item.date} {item.time}</p>
+                        {item.location && (
+                            <div className="flex items-center text-sm text-slate-600 mt-1">
+                                <span className="truncate">장소: {item.location}</span>
+                                <a 
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location)}`}
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="ml-1.5 flex-shrink-0 p-1 text-slate-400 hover:text-indigo-600 rounded-full hover:bg-indigo-50 transition-colors"
+                                    title="지도에서 위치 보기"
+                                >
+                                    <ExternalLinkIcon className="h-4 w-4" />
+                                </a>
+                            </div>
+                        )}
                     </div>
                     <div className="flex-shrink-0 ml-4 flex items-center">
                         {item.location && (

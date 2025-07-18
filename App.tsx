@@ -3,15 +3,20 @@ import type { ScheduleItem, UIChecklistItem } from './types';
 import AIGenerator from './components/AIGenerator';
 import ManualPlanner from './components/ManualPlanner';
 import SelectionScreen from './components/SelectionScreen';
+import AIReviewScreen from './components/AIReviewScreen';
 
 function App() {
-  const [mode, setMode] = useState<'selection' | 'ai' | 'manual'>('selection');
+  const [mode, setMode] = useState<'selection' | 'ai' | 'manual' | 'review'>('selection');
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
   const [checklist, setChecklist] = useState<UIChecklistItem[]>([]);
 
   const handleAIGeneration = (newSchedule: ScheduleItem[], newChecklist: UIChecklistItem[]) => {
     setSchedule(newSchedule);
     setChecklist(newChecklist);
+    setMode('review');
+  };
+  
+  const handleReviewConfirm = () => {
     setMode('manual');
   };
 
@@ -25,6 +30,14 @@ function App() {
     switch (mode) {
       case 'ai':
         return <AIGenerator onGenerate={handleAIGeneration} />;
+      case 'review':
+        return (
+          <AIReviewScreen 
+            schedule={schedule}
+            checklist={checklist}
+            onConfirm={handleReviewConfirm}
+          />
+        );
       case 'manual':
         return (
           <ManualPlanner
@@ -39,7 +52,11 @@ function App() {
         return (
           <SelectionScreen
             onSelectAI={() => setMode('ai')}
-            onSelectManual={() => setMode('manual')}
+            onSelectManual={() => {
+              setSchedule([]);
+              setChecklist([]);
+              setMode('manual');
+            }}
           />
         );
     }

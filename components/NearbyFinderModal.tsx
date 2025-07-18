@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { ScheduleItem, NearbyPlace } from '../types';
 import { findNearbyPlaces } from '../services/geminiService';
 import Modal from './Modal';
-import { PlusIcon } from './Icons';
+import { PlusIcon, MapPinIcon } from './Icons';
 
 interface NearbyFinderModalProps {
   isOpen: boolean;
@@ -33,16 +33,20 @@ const NearbyFinderModal: React.FC<NearbyFinderModalProps> = ({
     setResults([]);
 
     try {
-      const places = await findNearbyPlaces(targetItem.location, type);
-      setResults(places);
+        const places = await findNearbyPlaces(targetItem.location, type);
+        setResults(places);
     } catch (err: any) {
-      setError(err.message || '장소를 찾지 못했습니다.');
+        setError(err.message || '장소를 찾지 못했습니다.');
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
-  // Reset state when modal closes
+  const handleViewOnMap = (place: NearbyPlace) => {
+    const query = encodeURIComponent(`${place.name}, ${place.address}`);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank', 'noopener,noreferrer');
+  };
+
   const handleClose = () => {
     setPlaceType(null);
     setResults([]);
@@ -74,35 +78,52 @@ const NearbyFinderModal: React.FC<NearbyFinderModalProps> = ({
                 </button>
             </div>
             
-            <div className="mt-4 min-h-[200px]">
+            <div className="mt-4" style={{minHeight: '40vh', maxHeight: '50vh', overflowY: 'auto' }}>
                 {isLoading && (
                     <div className="flex flex-col items-center justify-center h-full text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                         <p className="mt-3 text-slate-500 text-sm">AI가 주변 {placeType}을(를) 찾고 있습니다...</p>
                     </div>
                 )}
-                {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+                {error && !isLoading && <p className="text-sm text-red-600 text-center p-4">{error}</p>}
                 
-                {results.length > 0 && (
-                    <div className="space-y-3 max-h-64 overflow-y-auto pr-2 -mr-2">
+                {!isLoading && !error && results.length > 0 && (
+                    <div className="space-y-3">
                         {results.map((place, index) => (
-                            <div key={index} className="bg-slate-100 p-3 rounded-lg flex items-start justify-between gap-2">
-                                <div className="flex-grow">
-                                    <h4 className="font-bold text-slate-800">{place.name}</h4>
-                                    <p className="text-sm text-slate-600 mt-1">{place.description}</p>
+                            <div 
+                                key={index} 
+                                className="p-4 rounded-lg bg-slate-100"
+                            >
+                                <h4 className="font-bold text-slate-800">{place.name}</h4>
+                                <p className="text-sm text-slate-600 mt-1 mb-3">{place.description}</p>
+                                <p className="text-xs text-slate-500 mt-1 flex items-center">
+                                  <MapPinIcon className="inline-block h-4 w-4 mr-1 flex-shrink-0" />
+                                  <span>{place.address}</span>
+                                </p>
+                                <div className="flex items-center justify-end gap-2 mt-3">
+                                    <button 
+                                      onClick={() => handleViewOnMap(place)}
+                                      className="px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200 transition-colors"
+                                    >
+                                        지도에서 보기
+                                    </button>
+                                    <button 
+                                      onClick={() => onAddToSchedule(place, targetItem)}
+                                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
+                                    >
+                                        <PlusIcon className="h-4 w-4" />
+                                        일정에 추가
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => onAddToSchedule(place, targetItem)}
-                                    className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-100 px-2 py-1 rounded-md hover:bg-indigo-200 transition-colors"
-                                    title="이 장소를 일정에 추가"
-                                >
-                                    <PlusIcon className="w-4 h-4" />
-                                    <span>추가</span>
-                                </button>
                             </div>
                         ))}
                     </div>
                 )}
+                 {!isLoading && !error && results.length === 0 && placeType && (
+                     <div className="flex items-center justify-center h-full">
+                        <p className="text-center text-slate-500 text-sm p-4">추천 장소를 찾지 못했습니다.</p>
+                     </div>
+                 )}
             </div>
         </div>
     </Modal>

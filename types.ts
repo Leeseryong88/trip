@@ -16,4 +16,5 @@ export interface UIChecklistItem {
 export interface NearbyPlace {
   name: string;
   description: string;
+  address: string;
 }

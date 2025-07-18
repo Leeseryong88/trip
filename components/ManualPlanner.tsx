@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import type { ScheduleItem, UIChecklistItem, NearbyPlace } from '../types';
 import ScheduleForm from './ScheduleForm';
-import PreviewPane from './PreviewPane';
 import { generateItineraryHtml, generateScheduleFromText, generateChecklistFromSchedule } from '../services/geminiService';
 import { SparklesIcon, DownloadIcon } from './Icons';
 import NearbyFinderModal from './NearbyFinderModal';
+import Modal from './Modal';
 
 declare var saveAs: (blob: Blob, filename: string) => void;
 
@@ -23,8 +22,11 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
   const [error, setError] = useState<string | null>(null);
   const [narrativeError, setNarrativeError] = useState<string | null>(null);
 
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+
   const [isNearbyFinderOpen, setIsNearbyFinderOpen] = useState(false);
   const [currentTargetItem, setCurrentTargetItem] = useState<ScheduleItem | null>(null);
+  const [showNarrative] = useState(() => schedule.length === 0);
 
   const handleNarrativeAdd = async (narrativeContent: string) => {
     if (!narrativeContent.trim()) return;
@@ -74,12 +76,15 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
     setNarrativeError(null);
     setIsLoading(true);
     setGeneratedHtml('');
+    setIsPreviewModalOpen(true); // Open modal to show loading state
+
     try {
       const checklistText = checklist.map(item => item.text);
       const html = await generateItineraryHtml(schedule, checklistText);
       setGeneratedHtml(html);
     } catch (err: any) {
       setError(err.message || '알 수 없는 오류가 발생했습니다.');
+      setIsPreviewModalOpen(false); // Close modal on error
     } finally {
       setIsLoading(false);
     }
@@ -127,8 +132,10 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
           <p>{error}</p>
         </div>
       )}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8" style={{ height: 'calc(100vh - 230px)' }}>
-        <div className="flex flex-col gap-6">
+      {/* Revised layout for single-column view */}
+      <div className="max-w-3xl mx-auto w-full">
+         {/* Container with explicit height to make form scrollable */}
+        <div style={{ height: 'calc(100vh - 180px)' }}>
           <ScheduleForm
             schedule={schedule}
             setSchedule={setSchedule}
@@ -138,28 +145,22 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
             isParsing={isParsing}
             narrativeError={narrativeError}
             onOpenNearbyFinder={handleOpenNearbyFinder}
+            showNarrativeInput={showNarrative}
           />
-          <div className="flex items-center gap-4">
+        </div>
+        {/* Action buttons are outside the scrolling container */}
+        <div className="flex items-center gap-4 mt-6">
             <button
               onClick={handleGenerate}
               disabled={isLoading || schedule.length === 0}
-              className="flex-1 flex items-center justify-center bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-indigo-300 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-indigo-300 disabled:cursor-not-allowed"
             >
               <SparklesIcon />
-              <span className="ml-2">{isLoading ? 'HTML 생성 중...' : '미리보기/HTML 생성'}</span>
+              <span className="ml-2">{isLoading ? '여행스케쥴 생성 중...' : '여행스케쥴 생성하기'}</span>
             </button>
-            <button
-              onClick={handleDownload}
-              disabled={!generatedHtml || isLoading}
-              className="flex-1 flex items-center justify-center bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-green-300 disabled:cursor-not-allowed"
-            >
-              <DownloadIcon />
-              <span className="ml-2">HTML 다운로드</span>
-            </button>
-          </div>
         </div>
-        <PreviewPane htmlContent={generatedHtml} isLoading={isLoading} />
       </div>
+      
       {currentTargetItem && (
         <NearbyFinderModal 
             isOpen={isNearbyFinderOpen}
@@ -168,6 +169,46 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
             onAddToSchedule={handleAddToScheduleFromFinder}
         />
       )}
+
+      <Modal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        title="일정 미리보기"
+        size="fullscreen"
+        headerActions={
+          <button
+            onClick={handleDownload}
+            disabled={!generatedHtml || isLoading}
+            className="flex items-center justify-center bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-green-300 disabled:cursor-not-allowed text-sm"
+          >
+            <DownloadIcon className="w-5 h-5" />
+            <span className="ml-2">스케쥴 파일로 받기</span>
+          </button>
+        }
+      >
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+              <p className="mt-4 text-slate-600">멋진 여행 일정을 생성 중입니다...</p>
+            </div>
+          </div>
+        ) : generatedHtml ? (
+          <iframe
+            srcDoc={generatedHtml}
+            title="일정 미리보기"
+            className="w-full h-full border-0 bg-slate-200"
+            sandbox="allow-scripts"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center text-slate-500 p-4">
+              <p className="font-semibold">오류가 발생했습니다.</p>
+              <p className="text-sm mt-1">일정 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.</p>
+            </div>
+          </div>
+        )}
+      </Modal>
     </>
   );
 };
