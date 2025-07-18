@@ -25,9 +25,6 @@ const SelectionScreen: React.FC<SelectionScreenProps> = ({ onSelectAI, onSelectM
   return (
     <div className="text-center w-full">
       <h2 className="text-4xl font-extrabold text-slate-800 mb-4 tracking-tight">어떻게 여행을 계획하시겠어요?</h2>
-      <p className="text-lg text-slate-600 mb-12 max-w-2xl mx-auto">
-        AI의 도움을 받아 여행 계획을 자동으로 생성하거나, 직접 세부 일정을 관리할 수 있습니다.
-      </p>
       <div className="flex flex-col md:flex-row justify-center items-stretch gap-8">
         <SelectionCard
           onClick={onSelectAI}
