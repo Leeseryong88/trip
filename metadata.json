@@ -1,0 +1,6 @@
+{
+  "name": "플래닛 (Plan-it)",
+  "description": "AI와 함께 여행 일정을 자동으로 생성하거나, 수동으로 계획을 관리하고 멋진 HTML 파일로 다운로드 할 수 있는 AI 여행 플래너입니다.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
