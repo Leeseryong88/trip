@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ScheduleItem, UIChecklistItem } from '../types';
-import { ExternalLinkIcon } from './Icons';
+import { ExternalLinkIcon, ShoppingCartIcon } from './Icons';
 
 interface AIReviewScreenProps {
   schedule: ScheduleItem[];
@@ -16,6 +16,7 @@ const AIReviewScreen: React.FC<AIReviewScreenProps> = ({ schedule, checklist, on
   }, {} as Record<string, ScheduleItem[]>);
 
   const sortedDates = Object.keys(groupedSchedule).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+  const affiliateTag = "AF4903034";
 
   return (
     <div className="max-w-7xl mx-auto w-full">
@@ -83,15 +84,30 @@ const AIReviewScreen: React.FC<AIReviewScreenProps> = ({ schedule, checklist, on
                     className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-not-allowed"
                     disabled
                   />
-                  <label htmlFor={`review-checklist-${item.id}`} className="ml-3 block text-sm font-medium text-slate-800">
+                  <label htmlFor={`review-checklist-${item.id}`} className="ml-3 block text-sm font-medium text-slate-800 flex-grow">
                     {item.text}
                   </label>
+                  <a
+                      href={`https://www.coupang.com/np/search?q=${encodeURIComponent(item.text)}&lptag=${affiliateTag}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 text-slate-500 hover:text-green-600 hover:bg-green-100 rounded-full flex-shrink-0"
+                      aria-label={`${item.text} 쿠팡에서 구매하기`}
+                      title="쿠팡에서 구매하기"
+                    >
+                      <ShoppingCartIcon className="h-5 w-5" />
+                  </a>
                 </div>
               ))
             ) : (
               <p className="text-center text-slate-500 py-10">추천 준비물이 없습니다.</p>
             )}
           </div>
+           {checklist.length > 0 && (
+            <p className="mt-4 text-xs text-slate-500 italic">
+              이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+            </p>
+          )}
         </div>
       </div>
       

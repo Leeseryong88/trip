@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+
+
+import React, { useState, useEffect, useRef } from 'react';
 import type { ScheduleItem, UIChecklistItem, NearbyPlace } from '../types';
 import ScheduleForm from './ScheduleForm';
 import { generateItineraryHtml, generateScheduleFromText, generateChecklistFromSchedule } from '../services/geminiService';
@@ -6,6 +8,7 @@ import { SparklesIcon, DownloadIcon } from './Icons';
 import NearbyFinderModal from './NearbyFinderModal';
 import Modal from './Modal';
 import { travelQuotes } from '../services/travelQuotes';
+import CoupangCarouselAd from './CoupangCarouselAd';
 
 declare var saveAs: (blob: Blob, filename: string) => void;
 
@@ -23,20 +26,52 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
   const [error, setError] = useState<string | null>(null);
   const [narrativeError, setNarrativeError] = useState<string | null>(null);
   const [currentQuote, setCurrentQuote] = useState<string>('');
+  
+  const [progress, setProgress] = useState(0);
+  const [showOvertimeMessage, setShowOvertimeMessage] = useState(false);
+  const [loadingDuration, setLoadingDuration] = useState(2 * 60 * 1000); // 기본 2분
+  const [loadingDurationMinutes, setLoadingDurationMinutes] = useState(2);
+  const timerRef = useRef<{ interval?: number; timeout?: number }>({});
 
   useEffect(() => {
     if (isLoading) {
-      // Set an initial quote
       setCurrentQuote(travelQuotes[Math.floor(Math.random() * travelQuotes.length)]);
-      
       const intervalId = setInterval(() => {
-        const randomIndex = Math.floor(Math.random() * travelQuotes.length);
-        setCurrentQuote(travelQuotes[randomIndex]);
-      }, 10000); // Change quote every 10 seconds
-
+        setCurrentQuote(travelQuotes[Math.floor(Math.random() * travelQuotes.length)]);
+      }, 10000);
       return () => clearInterval(intervalId);
     }
   }, [isLoading]);
+
+  useEffect(() => {
+    const clearTimers = () => {
+        if (timerRef.current.interval) clearInterval(timerRef.current.interval);
+        if (timerRef.current.timeout) clearTimeout(timerRef.current.timeout);
+        timerRef.current = {};
+    };
+    
+    if (isLoading) {
+        setProgress(0);
+        setShowOvertimeMessage(false);
+
+        const DURATION = loadingDuration;
+        const UPDATE_INTERVAL = 250;
+        const STEPS = DURATION / UPDATE_INTERVAL;
+        const increment = 100 / STEPS;
+
+        timerRef.current.interval = window.setInterval(() => {
+            setProgress(p => Math.min(p + increment, 99));
+        }, UPDATE_INTERVAL);
+
+        timerRef.current.timeout = window.setTimeout(() => {
+            setShowOvertimeMessage(true);
+        }, DURATION);
+    } else {
+        clearTimers();
+    }
+
+    return clearTimers;
+  }, [isLoading, loadingDuration]);
 
 
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
@@ -89,21 +124,53 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
       setError("일정을 생성하기 전에 하나 이상의 항목을 추가해주세요.");
       return;
     }
+    
+    // 여행 기간에 따라 동적으로 로딩 시간 계산
+    const uniqueDates = new Set(schedule.map(item => item.date));
+    const numberOfDays = uniqueDates.size > 0 ? uniqueDates.size : 1;
+    
+    let durationInMinutes;
+    if (numberOfDays <= 2) {
+        durationInMinutes = 2;
+    } else {
+        durationInMinutes = 2 + (numberOfDays - 2);
+    }
+    durationInMinutes = Math.min(durationInMinutes, 7); // 최대 7분
+    
+    setLoadingDurationMinutes(durationInMinutes);
+    setLoadingDuration(durationInMinutes * 60 * 1000);
+
     setError(null);
     setNarrativeError(null);
     setIsLoading(true);
     setGeneratedHtml('');
-    setIsPreviewModalOpen(true); // Open modal to show loading state
+    setIsPreviewModalOpen(true);
 
     try {
       const checklistText = checklist.map(item => item.text);
       const html = await generateItineraryHtml(schedule, checklistText);
-      setGeneratedHtml(html);
+      
+      if (timerRef.current.interval) clearInterval(timerRef.current.interval);
+      if (timerRef.current.timeout) clearTimeout(timerRef.current.timeout);
+      setShowOvertimeMessage(false);
+
+      const fillInterval = setInterval(() => {
+          setProgress(p => {
+              const nextProgress = p + 5;
+              if (nextProgress >= 100) {
+                  clearInterval(fillInterval);
+                  setGeneratedHtml(html);
+                  setIsLoading(false);
+                  return 100;
+              }
+              return nextProgress;
+          });
+      }, 30);
+
     } catch (err: any) {
       setError(err.message || '알 수 없는 오류가 발생했습니다.');
-      setIsPreviewModalOpen(false); // Close modal on error
-    } finally {
       setIsLoading(false);
+      setIsPreviewModalOpen(false);
     }
   };
 
@@ -149,9 +216,7 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
           <p>{error}</p>
         </div>
       )}
-      {/* Revised layout for single-column view */}
       <div className="max-w-3xl mx-auto w-full">
-         {/* Container with explicit height to make form scrollable */}
         <div style={{ height: 'calc(100vh - 180px)' }}>
           <ScheduleForm
             schedule={schedule}
@@ -165,7 +230,6 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
             showNarrativeInput={showNarrative}
           />
         </div>
-        {/* Action buttons are outside the scrolling container */}
         <div className="flex items-center gap-4 mt-6">
             <button
               onClick={handleGenerate}
@@ -190,28 +254,45 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
       <Modal
         isOpen={isPreviewModalOpen}
         onClose={() => setIsPreviewModalOpen(false)}
-        title="일정 미리보기"
+        title={isLoading ? "여행 계획 생성 중" : "일정 미리보기"}
         size="fullscreen"
         headerActions={
-          <button
-            onClick={handleDownload}
-            disabled={!generatedHtml || isLoading}
-            className="flex items-center justify-center bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-green-300 disabled:cursor-not-allowed text-sm"
-          >
-            <DownloadIcon className="w-5 h-5" />
-            <span className="ml-2">스케쥴 파일로 받기</span>
-          </button>
+          !isLoading && (
+            <button
+              onClick={handleDownload}
+              disabled={!generatedHtml}
+              className="flex items-center justify-center bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-green-300 disabled:cursor-not-allowed text-sm"
+            >
+              <DownloadIcon className="w-5 h-5" />
+              <span className="ml-2">스케쥴 파일로 받기</span>
+            </button>
+          )
         }
       >
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-6"></div>
-            <p className="text-slate-600 font-semibold text-lg">
-              일정을 생성중입니다.
-              <br />
-              <span className="text-sm">이 작업은 최대 2분 이상 소요될 수 있습니다.</span>
-            </p>
-            <p className="mt-8 text-slate-500 italic px-4">"{currentQuote}"</p>
+          <div className="flex flex-col items-center justify-center h-full text-center p-4">
+              <div className="w-full max-w-lg mx-auto">
+                  <div className="flex justify-between items-end mb-2">
+                      <span className="text-xl font-bold text-slate-800">
+                          {showOvertimeMessage ? "추가적인 보정 작업중입니다." : "AI가 최적의 일정을 만들고 있어요."}
+                      </span>
+                      <span className="text-lg font-bold text-indigo-600">{Math.floor(progress)}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-4 overflow-hidden">
+                      <div 
+                          className="bg-indigo-600 h-4 rounded-full transition-all duration-200 ease-linear" 
+                          style={{ width: `${progress}%` }}
+                      ></div>
+                  </div>
+                  <p className="mt-4 text-slate-500 text-sm">
+                      {showOvertimeMessage 
+                          ? "완벽한 여행을 위해 마지막 세부 사항을 다듬고 있습니다. 거의 다 됐어요!"
+                          : `이 작업은 최대 ${loadingDurationMinutes}분 정도 소요될 수 있습니다. 잠시만 기다려주세요.`
+                      }
+                  </p>
+              </div>
+              <p className="mt-12 text-slate-500 italic px-4">"{currentQuote}"</p>
+              <CoupangCarouselAd />
           </div>
         ) : generatedHtml ? (
           <iframe
