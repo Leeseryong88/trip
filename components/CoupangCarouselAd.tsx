@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 declare global {
   interface Window {
@@ -8,7 +8,6 @@ declare global {
 
 const CoupangCarouselAd: React.FC = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
 
   // 광고 스크립트를 포함한 전체 HTML 문서
   const adHtml = `
@@ -23,6 +22,14 @@ const CoupangCarouselAd: React.FC = () => {
             justify-content: center; 
             align-items: center; 
             font-family: system-ui, -apple-system, sans-serif;
+            min-height: 105px;
+          }
+          #ad-container {
+            width: 510px;
+            height: 105px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
           }
         </style>
       </head>
@@ -35,50 +42,37 @@ const CoupangCarouselAd: React.FC = () => {
           
           function loadCoupangAd() {
             try {
-              // 스크립트 로딩 타임아웃 설정
-              const timeoutId = setTimeout(() => {
-                if (retryAttempts < maxRetries) {
-                  retryAttempts++;
-                  loadCoupangAd();
-                }
-              }, 5000);
-              
               // 쿠팡 스크립트 동적 로드
               const script = document.createElement('script');
               script.src = 'https://ads-partners.coupang.com/g.js';
+              
               script.onload = function() {
-                clearTimeout(timeoutId);
-                if (window.PartnersCoupang && window.PartnersCoupang.G) {
+                // 스크립트 로드 성공 후 쿠팡 광고 초기화
+                setTimeout(() => {
                   try {
-                    new window.PartnersCoupang.G({
-                      "id": 860463,
-                      "trackingCode": "AF4903034",
-                      "subId": null,
-                      "template": "carousel",
-                      "width": "510",
-                      "height": "105"
-                    });
-                    
-                    // 성공 시 부모에게 알림
-                    setTimeout(() => {
-                      parent.postMessage({type: 'coupang-loaded'}, '*');
-                    }, 1000);
+                    if (window.PartnersCoupang && window.PartnersCoupang.G) {
+                      new window.PartnersCoupang.G({
+                        "id": 860463,
+                        "trackingCode": "AF4903034",
+                        "subId": null,
+                        "template": "carousel",
+                        "width": "510",
+                        "height": "105"
+                      });
+                    } else if (retryAttempts < maxRetries) {
+                      retryAttempts++;
+                      setTimeout(loadCoupangAd, 2000);
+                    }
                   } catch (error) {
                     if (retryAttempts < maxRetries) {
                       retryAttempts++;
                       setTimeout(loadCoupangAd, 2000);
                     }
                   }
-                } else {
-                  if (retryAttempts < maxRetries) {
-                    retryAttempts++;
-                    setTimeout(loadCoupangAd, 2000);
-                  }
-                }
+                }, 500);
               };
               
               script.onerror = function() {
-                clearTimeout(timeoutId);
                 if (retryAttempts < maxRetries) {
                   retryAttempts++;
                   setTimeout(loadCoupangAd, 2000);
@@ -88,10 +82,11 @@ const CoupangCarouselAd: React.FC = () => {
               document.head.appendChild(script);
             } catch (error) {
               // 오류 발생 시 조용히 실패
+              console.error('쿠팡 광고 로딩 오류:', error);
             }
           }
           
-          // 페이지 로드 시 광고 로딩 시작
+          // DOM이 준비되면 광고 로딩 시작
           if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', loadCoupangAd);
           } else {
@@ -102,30 +97,12 @@ const CoupangCarouselAd: React.FC = () => {
     </html>
   `;
 
-  const handleIframeMessage = (event: MessageEvent) => {
-    if (event.data?.type === 'coupang-loaded') {
-      setIsVisible(true);
-    }
-  };
-
   useEffect(() => {
-    // 메시지 이벤트 리스너 등록
-    window.addEventListener('message', handleIframeMessage);
-    
     const iframe = iframeRef.current;
     if (iframe) {
       iframe.srcdoc = adHtml;
     }
-    
-    return () => {
-      window.removeEventListener('message', handleIframeMessage);
-    };
   }, []);
-
-  // 배너가 성공적으로 로드된 경우에만 표시
-  if (!isVisible) {
-    return null;
-  }
 
   return (
     <div className="w-full max-w-[510px] mx-auto flex flex-col items-center mt-8">
