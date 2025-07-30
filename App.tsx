@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import type { ScheduleItem, UIChecklistItem } from './types';
 import AIGenerator from './components/AIGenerator';
 import ManualPlanner from './components/ManualPlanner';
-import SelectionScreen from './components/SelectionScreen';
 import AIReviewScreen from './components/AIReviewScreen';
 
 function App() {
-  const [mode, setMode] = useState<'selection' | 'ai' | 'manual' | 'review'>('selection');
+  const [mode, setMode] = useState<'ai' | 'manual' | 'review'>('ai');
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
   const [checklist, setChecklist] = useState<UIChecklistItem[]>([]);
 
@@ -23,7 +22,7 @@ function App() {
   const startNewPlan = () => {
     setSchedule([]);
     setChecklist([]);
-    setMode('selection');
+    setMode('ai');
   };
 
   const renderContent = () => {
@@ -47,18 +46,8 @@ function App() {
             setChecklist={setChecklist}
           />
         );
-      case 'selection':
       default:
-        return (
-          <SelectionScreen
-            onSelectAI={() => setMode('ai')}
-            onSelectManual={() => {
-              setSchedule([]);
-              setChecklist([]);
-              setMode('manual');
-            }}
-          />
-        );
+        return <AIGenerator onGenerate={handleAIGeneration} />;
     }
   };
 
@@ -73,23 +62,16 @@ function App() {
           >
             여행가J
           </h1>
-          {mode !== 'selection' && (
-            <button
-              onClick={startNewPlan}
-              className="px-4 py-2 text-sm font-semibold text-indigo-600 bg-indigo-100 rounded-lg hover:bg-indigo-200 transition-colors"
-            >
-              새로운 계획 시작
-            </button>
-          )}
+          <button
+            onClick={startNewPlan}
+            className="px-4 py-2 text-sm font-semibold text-indigo-600 bg-indigo-100 rounded-lg hover:bg-indigo-200 transition-colors"
+          >
+            새로운 계획 시작
+          </button>
         </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-        <div 
-          className={mode === 'selection' ? 'flex items-center justify-center' : ''}
-          style={mode === 'selection' ? { minHeight: 'calc(100vh - 150px)' } : {}}
-        >
-          {renderContent()}
-        </div>
+        {renderContent()}
       </main>
     </div>
   );

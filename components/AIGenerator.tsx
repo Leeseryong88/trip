@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { generateFullItineraryFromPrompt } from '../services/geminiService';
 import type { ScheduleItem, UIChecklistItem } from '../types';
 import { SparklesIcon } from './Icons';
+import CoupangCarouselAd from './CoupangCarouselAd';
 
 interface AIGeneratorProps {
   onGenerate: (schedule: ScheduleItem[], checklist: UIChecklistItem[]) => void;
@@ -51,7 +52,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onGenerate }) => {
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-slate-800">AI로 여행 계획 세우기</h2>
+        <h2 className="text-3xl font-bold text-slate-800">J형 AI의 완벽여행 큐레이션</h2>
         <p className="text-slate-500 mt-2">몇 가지 정보만 알려주시면 AI가 맞춤 여행을 설계해 드립니다.</p>
       </div>
       
@@ -102,6 +103,8 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onGenerate }) => {
           <span className="ml-2">{isLoading ? '일정 생성 중...' : 'AI로 일정 추천받기'}</span>
         </button>
       </form>
+      
+      <CoupangCarouselAd />
     </div>
   );
 };
