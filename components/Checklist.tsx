@@ -74,10 +74,10 @@ const Checklist: React.FC<ChecklistProps> = ({ checklist, setChecklist }) => {
                 className="flex-grow mr-2 lg:mr-3 p-2 lg:p-3 border border-slate-300 rounded-lg text-base lg:text-lg"
                 autoFocus
               />
-              <button onClick={saveEditing} className="p-2 lg:p-3 text-slate-500 hover:text-green-600 min-h-10 min-w-10 lg:min-h-12 lg:min-w-12" aria-label="저장">
+              <button onClick={saveEditing} className="p-2 lg:p-2 text-slate-500 hover:text-green-600 min-h-10 min-w-10 lg:min-h-10 lg:min-w-10" aria-label="저장">
                 <CheckIcon className="lg:h-5 lg:w-5" />
               </button>
-              <button onClick={cancelEditing} className="p-2 lg:p-3 text-slate-500 hover:text-red-600 min-h-10 min-w-10 lg:min-h-12 lg:min-w-12" aria-label="취소">
+              <button onClick={cancelEditing} className="p-2 lg:p-2 text-slate-500 hover:text-red-600 min-h-10 min-w-10 lg:min-h-10 lg:min-w-10" aria-label="취소">
                 <XMarkIcon className="lg:h-5 lg:w-5" />
               </button>
             </div>
@@ -100,16 +100,16 @@ const Checklist: React.FC<ChecklistProps> = ({ checklist, setChecklist }) => {
                 href={`https://www.coupang.com/np/search?q=${encodeURIComponent(item.text)}&lptag=${affiliateTag}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 lg:p-3 text-slate-500 hover:text-green-600 hover:bg-green-100 rounded-full flex-shrink-0 min-h-10 min-w-10 lg:min-h-12 lg:min-w-12"
+                className="p-2 lg:p-2 text-slate-500 hover:text-green-600 hover:bg-green-100 rounded-full flex-shrink-0 min-h-10 min-w-10 lg:min-h-10 lg:min-w-10"
                 aria-label={`${item.text} 쿠팡에서 구매하기`}
                 title="쿠팡에서 구매하기"
               >
                 <ShoppingCartIcon className="h-4 w-4 lg:h-5 lg:w-5" />
               </a>
-              <button onClick={() => startEditing(item)} className="p-2 lg:p-3 text-slate-500 hover:text-blue-600 hover:bg-blue-100 rounded-full min-h-10 min-w-10 lg:min-h-12 lg:min-w-12" aria-label="수정">
+              <button onClick={() => startEditing(item)} className="p-2 lg:p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-100 rounded-full min-h-10 min-w-10 lg:min-h-10 lg:min-w-10" aria-label="수정">
                 <PencilIcon className="h-4 w-4 lg:h-5 lg:w-5" />
               </button>
-              <button onClick={() => handleDeleteItem(item.id)} className="p-2 lg:p-3 text-slate-500 hover:text-red-600 hover:bg-red-100 rounded-full min-h-10 min-w-10 lg:min-h-12 lg:min-w-12" aria-label="삭제">
+              <button onClick={() => handleDeleteItem(item.id)} className="p-2 lg:p-2 text-slate-500 hover:text-red-600 hover:bg-red-100 rounded-full min-h-10 min-w-10 lg:min-h-10 lg:min-w-10" aria-label="삭제">
                 <TrashIcon className="h-4 w-4 lg:h-5 lg:w-5" />
               </button>
             </div>

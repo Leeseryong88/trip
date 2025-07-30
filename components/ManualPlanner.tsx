@@ -142,11 +142,11 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
       };
     } else {
       return {
-        container: "max-w-6xl mx-auto w-full px-6 xl:px-0",
-        height: "min-h-[600px]",
-        buttonContainer: "flex items-center gap-6 mt-8 px-6 xl:px-0",
-        buttonClass: "w-full flex items-center justify-center bg-indigo-600 text-white font-bold py-6 px-8 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-indigo-300 disabled:cursor-not-allowed text-xl",
-        iconSize: "h-7 w-7"
+        container: "max-w-5xl mx-auto w-full px-4 lg:px-0",
+        height: "min-h-[500px]",
+        buttonContainer: "flex items-center gap-4 mt-6 px-4 lg:px-0",
+        buttonClass: "w-full flex items-center justify-center bg-indigo-600 text-white font-bold py-4 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-indigo-300 disabled:cursor-not-allowed text-lg",
+        iconSize: "h-6 w-6"
       };
     }
   };
@@ -306,10 +306,10 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
           <div className="flex flex-col items-center justify-center h-full text-center p-4">
               <div className="w-full max-w-lg mx-auto">
                   <div className="flex justify-between items-end mb-2">
-                      <span className={`font-bold text-slate-800 ${isMobile ? 'text-lg' : isTablet ? 'text-xl' : 'text-2xl'}`}>
+                      <span className={`font-bold text-slate-800 ${isMobile ? 'text-lg' : isTablet ? 'text-xl' : 'text-xl'}`}>
                           {showOvertimeMessage ? "추가적인 보정 작업중입니다." : "AI가 최적의 일정을 만들고 있어요."}
                       </span>
-                      <span className={`font-bold text-indigo-600 ${isMobile ? 'text-base' : isTablet ? 'text-lg' : 'text-xl'}`}>{Math.floor(progress)}%</span>
+                      <span className={`font-bold text-indigo-600 ${isMobile ? 'text-base' : isTablet ? 'text-lg' : 'text-lg'}`}>{Math.floor(progress)}%</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-4 overflow-hidden">
                       <div 

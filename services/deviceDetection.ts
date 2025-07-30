@@ -184,14 +184,14 @@ export const getLayoutConfig = (deviceInfo: DeviceInfo): LayoutConfig => {
     };
   } else {
     return {
-      containerPadding: 'p-8 xl:p-12',
-      cardPadding: 'p-8 xl:p-10',
-      fontSize: 'text-xl',
-      buttonSize: 'py-5 px-8',
-      iconSize: 'h-7 w-7',
-      spacing: 'space-y-6',
+      containerPadding: 'p-6 lg:p-8',
+      cardPadding: 'p-6 lg:p-8',
+      fontSize: 'text-lg',
+      buttonSize: 'py-4 px-6',
+      iconSize: 'h-6 w-6',
+      spacing: 'space-y-5',
       gridCols: 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3',
-      maxWidth: 'max-w-7xl',
+      maxWidth: 'max-w-5xl',
     };
   }
 };

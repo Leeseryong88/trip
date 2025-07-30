@@ -66,8 +66,8 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onGenerate }) => {
         buttonPadding: "py-4 px-4",
         buttonText: "text-base",
         iconSize: "h-5 w-5",
-        gridLayout: "grid-cols-1",
-        gridGap: "gap-4"
+        gridLayout: "grid-cols-2",
+        gridGap: "gap-3"
       };
     } else if (isTablet) {
       return {
@@ -80,22 +80,22 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onGenerate }) => {
         buttonPadding: "py-4 px-6",
         buttonText: "text-lg",
         iconSize: "h-6 w-6",
-        gridLayout: "grid-cols-1 sm:grid-cols-2",
+        gridLayout: "grid-cols-2",
         gridGap: "gap-5"
       };
     } else {
       return {
-        container: "max-w-3xl mx-auto bg-white p-10 xl:p-12 rounded-2xl shadow-lg",
-        title: "text-4xl font-bold text-slate-800 text-center",
-        subtitle: "text-slate-500 mt-4 text-lg text-center",
-        formSpacing: "space-y-8",
-        inputPadding: "px-6 py-5",
-        inputText: "text-xl",
-        buttonPadding: "py-5 px-8",
-        buttonText: "text-xl",
-        iconSize: "h-7 w-7",
-        gridLayout: "grid-cols-1 md:grid-cols-2",
-        gridGap: "gap-8"
+        container: "max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg",
+        title: "text-3xl font-bold text-slate-800 text-center",
+        subtitle: "text-slate-500 mt-3 text-lg text-center",
+        formSpacing: "space-y-6",
+        inputPadding: "px-5 py-4",
+        inputText: "text-lg",
+        buttonPadding: "py-4 px-6",
+        buttonText: "text-lg",
+        iconSize: "h-6 w-6",
+        gridLayout: "grid-cols-2",
+        gridGap: "gap-6"
       };
     }
   };

@@ -106,42 +106,42 @@ const AIReviewScreen: React.FC<AIReviewScreenProps> = ({ schedule, checklist, on
       };
     } else {
       return {
-        container: "max-w-7xl mx-auto w-full px-6 xl:px-0",
+        container: "max-w-6xl mx-auto w-full px-4 lg:px-0",
         header: {
-          title: "text-5xl xl:text-6xl font-extrabold text-slate-800 tracking-tight text-center",
-          subtitle: "mt-6 text-xl xl:text-2xl text-slate-600 text-center max-w-4xl mx-auto",
-          margin: "mb-16"
+          title: "text-4xl font-extrabold text-slate-800 tracking-tight text-center",
+          subtitle: "mt-4 text-lg text-slate-600 text-center max-w-3xl mx-auto",
+          margin: "mb-12"
         },
         grid: {
-          layout: "grid grid-cols-1 lg:grid-cols-3 gap-10 xl:gap-12 items-start",
+          layout: "grid grid-cols-1 lg:grid-cols-3 gap-8 items-start",
           scheduleSpan: "lg:col-span-2",
           checklistSpan: ""
         },
         card: {
-          padding: "p-8 xl:p-10",
-          title: "text-3xl xl:text-4xl font-bold text-slate-800 mb-8 border-b pb-6",
-          scrollHeight: "max-h-[65vh]",
-          itemSpacing: "space-y-10"
+          padding: "p-6 lg:p-8",
+          title: "text-2xl lg:text-3xl font-bold text-slate-800 mb-6 border-b pb-4",
+          scrollHeight: "max-h-[60vh]",
+          itemSpacing: "space-y-6"
         },
         schedule: {
-          dateTitle: "text-2xl xl:text-3xl font-bold text-indigo-600 mb-6 sticky top-0 bg-white/95 backdrop-blur-sm py-3",
-          timeline: "space-y-6 border-l-2 border-indigo-100 pl-8 ml-1",
-          dotPosition: "before:left-[-37px] before:top-3 before:w-4 before:h-4",
-          timeText: "text-base xl:text-lg text-slate-500 font-medium",
-          activityText: "font-semibold text-slate-800 text-lg xl:text-xl",
-          locationText: "text-base xl:text-lg text-slate-600 mt-2",
-          costText: "text-base xl:text-lg text-green-600 mt-2",
-          iconSize: "h-5 w-5"
+          dateTitle: "text-xl font-bold text-indigo-600 mb-4 sticky top-0 bg-white/95 backdrop-blur-sm py-2",
+          timeline: "space-y-4 border-l-2 border-indigo-100 pl-6 ml-1",
+          dotPosition: "before:left-[-29px] before:top-2 before:w-3 before:h-3",
+          timeText: "text-sm text-slate-500 font-medium",
+          activityText: "font-semibold text-slate-800 text-base",
+          locationText: "text-sm text-slate-600 mt-1",
+          costText: "text-sm text-green-600 mt-1",
+          iconSize: "h-4 w-4"
         },
         checklist: {
-          itemPadding: "p-4",
-          checkboxSize: "h-5 w-5",
-          textSize: "text-base xl:text-lg font-medium",
-          iconSize: "h-6 w-6"
+          itemPadding: "p-3",
+          checkboxSize: "h-4 w-4",
+          textSize: "text-sm font-medium",
+          iconSize: "h-5 w-5"
         },
         button: {
-          container: "mt-16 xl:mt-20 text-center",
-          classes: "bg-indigo-600 text-white font-bold py-5 xl:py-6 px-12 xl:px-16 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-transform transform hover:scale-105 shadow-xl text-lg xl:text-xl"
+          container: "mt-12 text-center",
+          classes: "bg-indigo-600 text-white font-bold py-4 px-10 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-transform transform hover:scale-105 shadow-xl text-lg"
         }
       };
     }

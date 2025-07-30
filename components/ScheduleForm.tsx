@@ -108,7 +108,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
 
   return (
     <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-2xl shadow-lg h-full flex flex-col">
-      <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 mb-4 lg:mb-6">나의 여행 정보</h2>
+      <h2 className="text-xl sm:text-2xl lg:text-2xl font-bold text-slate-800 mb-4 lg:mb-6">나의 여행 정보</h2>
       
       {showNarrativeInput && (
         <form onSubmit={handleSubmit} className="mb-6 lg:mb-8 p-4 lg:p-6 bg-gradient-to-r from-slate-50 to-indigo-50 rounded-lg border">
@@ -165,8 +165,8 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
                          <input type="text" value={editedItemData.cost || ''} onChange={e => handleFieldChange('cost', e.target.value)} placeholder="비용" className="w-full text-sm lg:text-base p-2 lg:p-3 border rounded text-base" />
                     </div>
                     <div className="flex items-center justify-end gap-2 lg:gap-3 mt-3 lg:mt-4">
-                        <button onClick={saveEditing} className="p-2 lg:p-3 text-slate-500 hover:text-green-600 min-h-10 min-w-10 lg:min-h-12 lg:min-w-12" aria-label="저장"><CheckIcon className="lg:h-6 lg:w-6" /></button>
-                        <button onClick={cancelEditing} className="p-2 lg:p-3 text-slate-500 hover:text-red-600 min-h-10 min-w-10 lg:min-h-12 lg:min-w-12" aria-label="취소"><XMarkIcon className="lg:h-6 lg:w-6" /></button>
+                        <button onClick={saveEditing} className="p-2 lg:p-3 text-slate-500 hover:text-green-600 min-h-10 min-w-10 lg:min-h-10 lg:min-w-10" aria-label="저장"><CheckIcon className="lg:h-5 lg:w-5" /></button>
+                        <button onClick={cancelEditing} className="p-2 lg:p-3 text-slate-500 hover:text-red-600 min-h-10 min-w-10 lg:min-h-10 lg:min-w-10" aria-label="취소"><XMarkIcon className="lg:h-5 lg:w-5" /></button>
                     </div>
                 </li>
                 ) : (
@@ -194,10 +194,10 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
                     </div>
                     <div className="flex-shrink-0 ml-2 sm:ml-4 lg:ml-6 flex items-center">
                         {item.location && (
-                           <button onClick={() => onOpenNearbyFinder(item)} className="p-1 sm:p-2 lg:p-3 text-slate-500 hover:text-indigo-600 hover:bg-indigo-100 rounded-full min-h-8 min-w-8 sm:min-h-10 sm:min-w-10 lg:min-h-12 lg:min-w-12" aria-label="주변 장소 찾기" title="주변 장소 찾기"><MapPinIcon className="h-4 w-4 lg:h-5 lg:w-5" /></button>
+                           <button onClick={() => onOpenNearbyFinder(item)} className="p-1 sm:p-2 lg:p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-100 rounded-full min-h-8 min-w-8 sm:min-h-10 sm:min-w-10 lg:min-h-10 lg:min-w-10" aria-label="주변 장소 찾기" title="주변 장소 찾기"><MapPinIcon className="h-4 w-4 lg:h-5 lg:w-5" /></button>
                         )}
-                        <button onClick={() => startEditing(item)} className="p-1 sm:p-2 lg:p-3 text-slate-500 hover:text-blue-600 hover:bg-blue-100 rounded-full min-h-8 min-w-8 sm:min-h-10 sm:min-w-10 lg:min-h-12 lg:min-w-12" aria-label="일정 수정"><PencilIcon className="h-4 w-4 lg:h-5 lg:w-5" /></button>
-                        <button onClick={() => handleDeleteItem(item.id)} className="p-1 sm:p-2 lg:p-3 text-slate-500 hover:text-red-600 hover:bg-red-100 rounded-full min-h-8 min-w-8 sm:min-h-10 sm:min-w-10 lg:min-h-12 lg:min-w-12" aria-label="일정 삭제"><TrashIcon className="h-4 w-4 lg:h-5 lg:w-5" /></button>
+                        <button onClick={() => startEditing(item)} className="p-1 sm:p-2 lg:p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-100 rounded-full min-h-8 min-w-8 sm:min-h-10 sm:min-w-10 lg:min-h-10 lg:min-w-10" aria-label="일정 수정"><PencilIcon className="h-4 w-4 lg:h-5 lg:w-5" /></button>
+                        <button onClick={() => handleDeleteItem(item.id)} className="p-1 sm:p-2 lg:p-2 text-slate-500 hover:text-red-600 hover:bg-red-100 rounded-full min-h-8 min-w-8 sm:min-h-10 sm:min-w-10 lg:min-h-10 lg:min-w-10" aria-label="일정 삭제"><TrashIcon className="h-4 w-4 lg:h-5 lg:w-5" /></button>
                     </div>
                 </li>
                 )
