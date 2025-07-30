@@ -3,6 +3,7 @@ import type { ScheduleItem, UIChecklistItem } from './types';
 import AIGenerator from './components/AIGenerator';
 import ManualPlanner from './components/ManualPlanner';
 import AIReviewScreen from './components/AIReviewScreen';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   const [mode, setMode] = useState<'ai' | 'manual' | 'review'>('ai');
@@ -73,6 +74,7 @@ function App() {
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         {renderContent()}
       </main>
+      <Analytics />
     </div>
   );
 }
