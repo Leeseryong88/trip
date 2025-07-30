@@ -9,6 +9,7 @@ import NearbyFinderModal from './NearbyFinderModal';
 import Modal from './Modal';
 import { travelQuotes } from '../services/travelQuotes';
 import CoupangCarouselAd from './CoupangCarouselAd';
+import { useResponsiveLayout } from '../services/deviceDetection';
 
 declare var saveAs: (blob: Blob, filename: string) => void;
 
@@ -26,6 +27,9 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
   const [error, setError] = useState<string | null>(null);
   const [narrativeError, setNarrativeError] = useState<string | null>(null);
   const [currentQuote, setCurrentQuote] = useState<string>('');
+  
+  // 디바이스 정보와 레이아웃 설정 가져오기
+  const { deviceInfo, layoutConfig, isMobile, isTablet, isDesktop } = useResponsiveLayout();
   
   const [progress, setProgress] = useState(0);
   const [showOvertimeMessage, setShowOvertimeMessage] = useState(false);
@@ -118,6 +122,36 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
     }
   };
 
+  // 디바이스별 스타일 설정
+  const getLayoutStyles = () => {
+    if (isMobile) {
+      return {
+        container: "max-w-full mx-auto w-full px-3",
+        height: "min-h-[400px]",
+        buttonContainer: "flex items-center gap-3 mt-4 px-3",
+        buttonClass: "w-full flex items-center justify-center bg-indigo-600 text-white font-bold py-4 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-indigo-300 disabled:cursor-not-allowed text-base",
+        iconSize: "h-5 w-5"
+      };
+    } else if (isTablet) {
+      return {
+        container: "max-w-4xl mx-auto w-full px-4",
+        height: "min-h-[500px]",
+        buttonContainer: "flex items-center gap-4 mt-6 px-4",
+        buttonClass: "w-full flex items-center justify-center bg-indigo-600 text-white font-bold py-4 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-indigo-300 disabled:cursor-not-allowed text-lg",
+        iconSize: "h-6 w-6"
+      };
+    } else {
+      return {
+        container: "max-w-6xl mx-auto w-full px-6 xl:px-0",
+        height: "min-h-[600px]",
+        buttonContainer: "flex items-center gap-6 mt-8 px-6 xl:px-0",
+        buttonClass: "w-full flex items-center justify-center bg-indigo-600 text-white font-bold py-6 px-8 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-indigo-300 disabled:cursor-not-allowed text-xl",
+        iconSize: "h-7 w-7"
+      };
+    }
+  };
+
+  const layoutStyles = getLayoutStyles();
 
   const handleGenerate = async () => {
     if (schedule.length === 0) {
@@ -207,7 +241,6 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
     handleCloseNearbyFinder();
   };
 
-
   return (
     <>
       {error && (
@@ -216,8 +249,8 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
           <p>{error}</p>
         </div>
       )}
-      <div className="max-w-3xl mx-auto w-full">
-        <div style={{ height: 'calc(100vh - 180px)' }}>
+      <div className={layoutStyles.container}>
+        <div style={{ height: 'calc(100vh - 200px)' }} className={layoutStyles.height}>
           <ScheduleForm
             schedule={schedule}
             setSchedule={setSchedule}
@@ -230,13 +263,13 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
             showNarrativeInput={showNarrative}
           />
         </div>
-        <div className="flex items-center gap-4 mt-6">
+        <div className={layoutStyles.buttonContainer}>
             <button
               onClick={handleGenerate}
               disabled={isLoading || schedule.length === 0}
-              className="w-full flex items-center justify-center bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:bg-indigo-300 disabled:cursor-not-allowed"
+              className={layoutStyles.buttonClass}
             >
-              <SparklesIcon />
+              <SparklesIcon className={layoutStyles.iconSize} />
               <span className="ml-2">{isLoading ? '여행스케쥴 생성 중...' : '여행스케쥴 생성하기'}</span>
             </button>
         </div>
@@ -273,10 +306,10 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
           <div className="flex flex-col items-center justify-center h-full text-center p-4">
               <div className="w-full max-w-lg mx-auto">
                   <div className="flex justify-between items-end mb-2">
-                      <span className="text-xl font-bold text-slate-800">
+                      <span className={`font-bold text-slate-800 ${isMobile ? 'text-lg' : isTablet ? 'text-xl' : 'text-2xl'}`}>
                           {showOvertimeMessage ? "추가적인 보정 작업중입니다." : "AI가 최적의 일정을 만들고 있어요."}
                       </span>
-                      <span className="text-lg font-bold text-indigo-600">{Math.floor(progress)}%</span>
+                      <span className={`font-bold text-indigo-600 ${isMobile ? 'text-base' : isTablet ? 'text-lg' : 'text-xl'}`}>{Math.floor(progress)}%</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-4 overflow-hidden">
                       <div 
@@ -284,14 +317,14 @@ const ManualPlanner: React.FC<ManualPlannerProps> = ({ schedule, setSchedule, ch
                           style={{ width: `${progress}%` }}
                       ></div>
                   </div>
-                  <p className="mt-4 text-slate-500 text-sm">
+                  <p className={`mt-4 text-slate-500 ${isMobile ? 'text-sm' : 'text-base'}`}>
                       {showOvertimeMessage 
                           ? "완벽한 여행을 위해 마지막 세부 사항을 다듬고 있습니다. 거의 다 됐어요!"
                           : `이 작업은 최대 ${loadingDurationMinutes}분 정도 소요될 수 있습니다. 잠시만 기다려주세요.`
                       }
                   </p>
               </div>
-              <p className="mt-12 text-slate-500 italic px-4">"{currentQuote}"</p>
+              <p className={`mt-12 text-slate-500 italic px-4 ${isMobile ? 'text-sm' : 'text-base'}`}>"{currentQuote}"</p>
               <CoupangCarouselAd />
           </div>
         ) : generatedHtml ? (

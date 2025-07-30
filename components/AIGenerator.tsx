@@ -4,6 +4,7 @@ import { generateFullItineraryFromPrompt } from '../services/geminiService';
 import type { ScheduleItem, UIChecklistItem } from '../types';
 import { SparklesIcon } from './Icons';
 import CoupangCarouselAd from './CoupangCarouselAd';
+import { useResponsiveLayout } from '../services/deviceDetection';
 
 interface AIGeneratorProps {
   onGenerate: (schedule: ScheduleItem[], checklist: UIChecklistItem[]) => void;
@@ -17,6 +18,9 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onGenerate }) => {
   const [numPeople, setNumPeople] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // 디바이스 정보와 레이아웃 설정 가져오기
+  const { deviceInfo, layoutConfig, isMobile, isTablet, isDesktop } = useResponsiveLayout();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,11 +53,65 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onGenerate }) => {
     }
   };
 
+  // 디바이스별 스타일 설정
+  const getFormStyles = () => {
+    if (isMobile) {
+      return {
+        container: "max-w-lg mx-auto bg-white p-4 rounded-2xl shadow-lg",
+        title: "text-2xl font-bold text-slate-800 text-center",
+        subtitle: "text-slate-500 mt-2 text-sm text-center",
+        formSpacing: "space-y-4",
+        inputPadding: "px-4 py-3",
+        inputText: "text-base",
+        buttonPadding: "py-4 px-4",
+        buttonText: "text-base",
+        iconSize: "h-5 w-5",
+        gridLayout: "grid-cols-1",
+        gridGap: "gap-4"
+      };
+    } else if (isTablet) {
+      return {
+        container: "max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow-lg",
+        title: "text-3xl font-bold text-slate-800 text-center",
+        subtitle: "text-slate-500 mt-3 text-base text-center",
+        formSpacing: "space-y-5",
+        inputPadding: "px-5 py-4",
+        inputText: "text-lg",
+        buttonPadding: "py-4 px-6",
+        buttonText: "text-lg",
+        iconSize: "h-6 w-6",
+        gridLayout: "grid-cols-1 sm:grid-cols-2",
+        gridGap: "gap-5"
+      };
+    } else {
+      return {
+        container: "max-w-3xl mx-auto bg-white p-10 xl:p-12 rounded-2xl shadow-lg",
+        title: "text-4xl font-bold text-slate-800 text-center",
+        subtitle: "text-slate-500 mt-4 text-lg text-center",
+        formSpacing: "space-y-8",
+        inputPadding: "px-6 py-5",
+        inputText: "text-xl",
+        buttonPadding: "py-5 px-8",
+        buttonText: "text-xl",
+        iconSize: "h-7 w-7",
+        gridLayout: "grid-cols-1 md:grid-cols-2",
+        gridGap: "gap-8"
+      };
+    }
+  };
+
+  const formStyles = getFormStyles();
+
   return (
-    <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-slate-800">J형 AI의 완벽여행 큐레이션</h2>
-        <p className="text-slate-500 mt-2">몇 가지 정보만 알려주시면 AI가 맞춤 여행을 설계해 드립니다.</p>
+    <div className={formStyles.container}>
+      <div className="text-center mb-6 lg:mb-10">
+        <h2 className={formStyles.title}>J형 AI의 완벽여행 큐레이션</h2>
+        <p className={formStyles.subtitle}>
+          {isMobile 
+            ? "정보만 입력하면 AI가 맞춤 여행을 설계해 드립니다."
+            : "몇 가지 정보만 알려주시면 AI가 맞춤 여행을 설계해 드립니다."
+          }
+        </p>
       </div>
       
       {error && (
@@ -63,43 +121,46 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onGenerate }) => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className={formStyles.formSpacing}>
         <div>
-          <label htmlFor="destination" className="block text-sm font-medium text-slate-700 mb-1">여행지</label>
+          <label htmlFor="destination" className={`block text-sm ${layoutConfig.fontSize} font-medium text-slate-700 mb-2 lg:mb-3`}>여행지</label>
           <input type="text" id="destination" value={destination} onChange={e => setDestination(e.target.value)}
-                 className="w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                 className={`w-full ${formStyles.inputPadding} border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${formStyles.inputText}`}
                  placeholder="예: 서울, 제주도" required />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`grid ${formStyles.gridLayout} ${formStyles.gridGap}`}>
           <div>
-            <label htmlFor="start-date" className="block text-sm font-medium text-slate-700 mb-1">여행 시작일</label>
+            <label htmlFor="start-date" className={`block text-sm ${layoutConfig.fontSize} font-medium text-slate-700 mb-2 lg:mb-3`}>여행 시작일</label>
             <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)}
-                   className="w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+                   className={`w-full ${formStyles.inputPadding} border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${formStyles.inputText}`} required />
           </div>
           <div>
-            <label htmlFor="end-date" className="block text-sm font-medium text-slate-700 mb-1">여행 종료일</label>
+            <label htmlFor="end-date" className={`block text-sm ${layoutConfig.fontSize} font-medium text-slate-700 mb-2 lg:mb-3`}>여행 종료일</label>
             <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                   className="w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+                   className={`w-full ${formStyles.inputPadding} border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${formStyles.inputText}`} required />
           </div>
         </div>
         
         <div>
-          <label htmlFor="concept" className="block text-sm font-medium text-slate-700 mb-1">여행 컨셉 (선택)</label>
-          <textarea id="concept" rows={3} value={concept} onChange={e => setConcept(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="예: 3박 4일 가족 힐링 여행, 친구와 함께하는 맛집 탐방, 혼자 즐기는 역사 유적지 투어"></textarea>
+          <label htmlFor="concept" className={`block text-sm ${layoutConfig.fontSize} font-medium text-slate-700 mb-2 lg:mb-3`}>여행 컨셉 (선택)</label>
+          <textarea id="concept" rows={isMobile ? 3 : 4} value={concept} onChange={e => setConcept(e.target.value)}
+                    className={`w-full ${formStyles.inputPadding} border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${formStyles.inputText} resize-none`}
+                    placeholder={isMobile 
+                      ? "예: 가족 힐링 여행, 맛집 탐방"
+                      : "예: 3박 4일 가족 힐링 여행, 친구와 함께하는 맛집 탐방, 혼자 즐기는 역사 유적지 투어"
+                    }></textarea>
         </div>
         
         <div>
-          <label htmlFor="num-people" className="block text-sm font-medium text-slate-700 mb-1">인원</label>
+          <label htmlFor="num-people" className={`block text-sm ${layoutConfig.fontSize} font-medium text-slate-700 mb-2 lg:mb-3`}>인원</label>
           <input type="number" id="num-people" value={numPeople} min="1" onChange={e => setNumPeople(e.target.value)}
-                 className="w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+                 className={`w-full ${formStyles.inputPadding} border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${formStyles.inputText}`} required />
         </div>
 
         <button type="submit" disabled={isLoading}
-                className="w-full flex items-center justify-center bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-300 disabled:bg-indigo-400">
-          {isLoading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <SparklesIcon />}
+                className={`w-full flex items-center justify-center bg-indigo-600 text-white font-bold ${formStyles.buttonPadding} rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-300 disabled:bg-indigo-400 ${formStyles.buttonText}`}>
+          {isLoading ? <div className={`animate-spin rounded-full ${formStyles.iconSize} border-b-2 border-white`}></div> : <SparklesIcon className={formStyles.iconSize} />}
           <span className="ml-2">{isLoading ? '일정 생성 중...' : 'AI로 일정 추천받기'}</span>
         </button>
       </form>
